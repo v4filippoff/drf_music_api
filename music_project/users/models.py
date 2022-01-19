@@ -19,3 +19,27 @@ class User(AbstractUser):
         blank=True,
         null=True
     )
+
+
+class SocialLink(models.Model):
+    """
+    Модель ссылок на соц.сети пользователя
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='social_links')
+    link = models.URLField('User social link')
+
+    def __str__(self):
+        return '{0}: {1}'.format(self.user.username, self.link)
+
+
+class Subscription(models.Model):
+    """
+    Модель подписки на автора
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscribers')
+
+    def __str__(self):
+        return '{0} is subscribed on {1}'.format(self.user, self.author)
