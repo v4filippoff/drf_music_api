@@ -1,4 +1,6 @@
 from io import BytesIO
+import os
+import shutil
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -47,3 +49,10 @@ class UserSerializerTestCase(TestCase):
             }
         ]
         self.assertEqual(data, expected_data)
+
+    def tearDown(self):
+        """
+        Удаляем медиа-директорию тестового пользователя
+        """
+        dirname_with_image = os.path.dirname(self.user1.avatar.path)
+        shutil.rmtree(dirname_with_image)
