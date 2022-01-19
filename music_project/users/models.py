@@ -9,7 +9,6 @@ class User(AbstractUser):
     """
     Модель пользователя
     """
-
     slug = AutoSlugField(populate_from='username')
     description = models.CharField('User description', max_length=2000, blank=True)
     country = models.CharField('Country', max_length=50, blank=True)
@@ -25,7 +24,6 @@ class SocialLink(models.Model):
     """
     Модель ссылок на соц.сети пользователя
     """
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='social_links')
     link = models.URLField('User social link')
 
@@ -37,7 +35,6 @@ class Subscription(models.Model):
     """
     Модель подписки на автора
     """
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscribers')
 
