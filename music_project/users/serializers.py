@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer
 
+User = get_user_model()
+
 
 class UserProfileSerializer(ModelSerializer):
     class Meta:
-        model = get_user_model()
+        model = User
         fields = [
             'id',
             'username',
@@ -12,3 +14,4 @@ class UserProfileSerializer(ModelSerializer):
             'country',
             'avatar'
         ]
+        extra_kwargs = {'username': {'read_only': True}}

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .services import get_avatar_upload_path
+from users.services import get_avatar_upload_path
 
 
 class User(AbstractUser):
