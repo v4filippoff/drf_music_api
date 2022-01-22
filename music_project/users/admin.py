@@ -5,7 +5,6 @@ from users.models import User, SocialLink, Subscription
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
         'username',
         'email',
         'description',
@@ -17,7 +16,6 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(SocialLink)
 class SocialLinkAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
         'user',
         'link',
     )
@@ -26,7 +24,6 @@ class SocialLinkAdmin(admin.ModelAdmin):
 @admin.register(Subscription)
 class SubscriptionLinkAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
         'user',
         'author',
     )

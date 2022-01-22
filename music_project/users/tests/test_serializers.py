@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
 from users.models import User
-from users.serializers import UserSerializer
+from users.serializers import UserProfileSerializer
 
 
 class UserSerializerTestCase(TestCase):
@@ -31,7 +31,7 @@ class UserSerializerTestCase(TestCase):
         self.user1.save()
 
     def test_all_fields(self):
-        data = UserSerializer([self.user1, self.user2], many=True).data
+        data = UserProfileSerializer([self.user1, self.user2], many=True).data
         expected_data = [
             {
                 'id': self.user1.id,
