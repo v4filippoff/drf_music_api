@@ -1,10 +1,23 @@
 from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer
 
+from users.models import SocialLink
+
 User = get_user_model()
 
 
+class SocialLinkSerializer(ModelSerializer):
+    class Meta:
+        model = SocialLink
+        fields = [
+            'id',
+            'link'
+        ]
+
+
 class UserProfileSerializer(ModelSerializer):
+    social_links = SocialLinkSerializer(many=True)
+
     class Meta:
         model = User
         fields = [
@@ -12,6 +25,7 @@ class UserProfileSerializer(ModelSerializer):
             'username',
             'description',
             'country',
-            'avatar'
+            'avatar',
+            'social_links'
         ]
-        extra_kwargs = {'username': {'read_only': True}}
+        read_only_fields = ['username', 'social_links']
