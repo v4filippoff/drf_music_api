@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 class UserProfileViewSet(ViewSetMixin, ListAPIView, RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.prefetch_related('social_links')
     serializer_class = UserProfileSerializer
     permission_classes = [IsOwnerOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter]
