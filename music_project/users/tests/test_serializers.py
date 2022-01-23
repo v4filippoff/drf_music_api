@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
-from users.models import User
+from users.models import User, SocialLink
 from users.serializers import UserProfileSerializer
 
 
@@ -24,6 +24,10 @@ class UserSerializerTestCase(TestCase):
             country='USA'
         )
 
+        self.social_link1 = SocialLink.objects.create(user=self.user1, link='https://test.com')
+        self.social_link2 = SocialLink.objects.create(user=self.user1, link='https://facebook.com')
+        self.social_link3 = SocialLink.objects.create(user=self.user2, link='https://youtube.com')
+
         image = BytesIO()
         Image.new('RGB', (100, 100)).save(image, 'JPEG')
         image.seek(0)
@@ -38,14 +42,30 @@ class UserSerializerTestCase(TestCase):
                 'username': 'TestUser',
                 'description': 'Test Description',
                 'country': 'Russia',
-                'avatar': self.user1.avatar.url
+                'avatar': self.user1.avatar.url,
+                'social_links': [
+                    {
+                        'id': self.social_link1.id,
+                        'link': 'https://test.com'
+                    },
+                    {
+                        'id': self.social_link2.id,
+                        'link': 'https://facebook.com'
+                    }
+                ]
             },
             {
                 'id': self.user2.id,
                 'username': 'TestUser2',
                 'description': 'Test Description2',
                 'country': 'USA',
-                'avatar': None
+                'avatar': None,
+                'social_links': [
+                    {
+                        'id': self.social_link3.id,
+                        'link': 'https://youtube.com'
+                    }
+                ]
             }
         ]
         self.assertEqual(data, expected_data)

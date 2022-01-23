@@ -16,7 +16,7 @@ class SocialLinkSerializer(ModelSerializer):
 
 
 class UserProfileSerializer(ModelSerializer):
-    social_links = SocialLinkSerializer(many=True)
+    social_links = SocialLinkSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -28,4 +28,3 @@ class UserProfileSerializer(ModelSerializer):
             'avatar',
             'social_links'
         ]
-        read_only_fields = ['username', 'social_links']
