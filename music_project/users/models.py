@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.urls import reverse
 
 from users.services import get_avatar_upload_path
 
@@ -16,6 +17,9 @@ class User(AbstractUser):
         blank=True,
         null=True
     )
+
+    def get_absolute_url(self):
+        return reverse('users-detail', args=(self.pk,))
 
 
 class SocialLink(models.Model):
