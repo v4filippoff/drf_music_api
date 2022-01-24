@@ -6,8 +6,8 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
-from users.models import User, SocialLink
-from users.serializers import UserProfileSerializer
+from users.models import User, SocialLink, Subscription
+from users.serializers import UserProfileSerializer, SubscriberSerializer
 
 
 class UserSerializerTestCase(TestCase):
@@ -76,3 +76,41 @@ class UserSerializerTestCase(TestCase):
         """
         dirname_with_image = os.path.dirname(self.user1.avatar.path)
         shutil.rmtree(dirname_with_image)
+
+
+class SubscriberSerializerTestCase(TestCase):
+
+    def setUp(self):
+        self.author = User.objects.create(
+            username='TestAuthor',
+            description='Test Description',
+            country='Russia'
+        )
+        self.user1 = User.objects.create(
+            username='TestUser1',
+            description='Test Description1',
+            country='USA'
+        )
+        self.user2 = User.objects.create(
+            username='TestUser2',
+            description='Test Description2',
+            country='Russia'
+        )
+        self.sub1 = Subscription.objects.create(user=self.user1, author=self.author)
+        self.sub2 = Subscription.objects.create(user=self.user2, author=self.author)
+
+    def test_all_fields(self):
+        data = SubscriberSerializer([self.sub1, self.sub2], many=True).data
+        expected_data = [
+            {
+                'subscription_id': self.sub1.id,
+                'username': 'TestUser1',
+                'url': f'/api/users/{self.user1.id}/'
+            },
+            {
+                'subscription_id': self.sub2.id,
+                'username': 'TestUser2',
+                'url': f'/api/users/{self.user2.id}/'
+            }
+        ]
+        self.assertEqual(data, expected_data)

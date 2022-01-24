@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
-from users.models import SocialLink
-from users.serializers import UserProfileSerializer, SocialLinkSerializer
+from users.models import SocialLink, Subscription
+from users.serializers import UserProfileSerializer, SocialLinkSerializer, SubscriberSerializer
 
 User = get_user_model()
 
@@ -30,6 +30,9 @@ class BaseUserApiTestCase(TestCase):
         self.social_link1 = SocialLink.objects.create(user=self.user1, link='https://test.com')
         self.social_link2 = SocialLink.objects.create(user=self.user1, link='https://facebook.com')
         self.social_link3 = SocialLink.objects.create(user=self.user2, link='https://youtube.com')
+
+        self.sub1 = Subscription.objects.create(user=self.user2, author=self.user1)
+        self.sub2 = Subscription.objects.create(user=self.user3, author=self.user1)
 
 
 class UserProfileApiTestCase(BaseUserApiTestCase):
@@ -137,7 +140,6 @@ class SocialLinksApiTestCase(BaseUserApiTestCase):
         response = self.client.post(url, data=data, content_type='application/json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(SocialLink.objects.get(id=response.data['id']).user, self.user1)
         self.assertEqual(self.user1.social_links.count(), 3)
 
     def test_update(self):
@@ -178,3 +180,60 @@ class SocialLinksApiTestCase(BaseUserApiTestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class SubscriptionsApiTestCase(BaseUserApiTestCase):
+
+    def test_get_list(self):
+        url = reverse('sub-list', args=(self.user1.id,))
+        response = self.client.get(url)
+        subs = Subscription.objects.filter(author=self.user1)
+        serializer_data = SubscriberSerializer(subs, many=True).data
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer_data)
+
+    def test_subscribe(self):
+        url = reverse('sub-list', args=(self.user1.id,))
+        user4 = User.objects.create(username='user4')
+        self.client.force_login(user4)
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.user1.subscribers.count(), 3)
+        self.assertTrue(Subscription.objects.filter(author=self.user1, user=user4).exists())
+
+    def test_unsubscribe(self):
+        url = reverse('sub-list', args=(self.user1.id,))
+        self.client.force_login(self.user3)
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.user1.subscribers.count(), 1)
+        self.assertFalse(Subscription.objects.filter(author=self.user1, user=self.user3).exists())
+
+    def test_double_subscribe(self):
+        url = reverse('sub-list', args=(self.user1.id,))
+        self.client.force_login(self.user3)
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(self.user1.subscribers.count(), 2)
+
+    def test_unsubscribe_before_subscription(self):
+        url = reverse('sub-list', args=(self.user1.id,))
+        user4 = User.objects.create(username='user4')
+        self.client.force_login(user4)
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.user1.subscribers.count(), 2)
+
+    def test_subscribe_by_author(self):
+        url = reverse('sub-list', args=(self.user1.id,))
+        self.client.force_login(self.user1)
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.user1.subscribers.count(), 2)
+        self.assertFalse(Subscription.objects.filter(author=self.user1, user=self.user1).exists())
