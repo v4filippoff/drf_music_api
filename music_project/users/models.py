@@ -19,7 +19,7 @@ class User(AbstractUser):
     )
 
     def get_absolute_url(self):
-        return reverse('users-detail', args=(self.pk,))
+        return reverse('user-detail', args=(self.pk,))
 
 
 class SocialLink(models.Model):

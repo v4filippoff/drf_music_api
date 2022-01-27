@@ -14,26 +14,19 @@ class IsProfileOwnerOrReadOnly(BasePermission):
         )
 
 
-class IsSocialLinksOwnerOrReadOnly(BasePermission):
+class IsUrlOwnerOrReadOnly(BasePermission):
     """
     Проверка проходит, если текущий пользователь запрашивает ресурс со своим id
     """
     def has_permission(self, request, view):
+        required_attr = 'owner_url_kwarg'
+        if not hasattr(view, required_attr):
+            raise AttributeError(
+                f"'{view.get_view_name()}' view has no attribute '{required_attr}'"
+            )
+
         return bool(
             request.method in SAFE_METHODS or
             request.user and request.user.is_authenticated and
-            request.user.id == view.kwargs['user_id']
-        )
-
-
-class IsNotSubscribersOwnerOrReadOnly(BasePermission):
-    """
-    Проверка проходит если текущий пользователь запрашивает ресурс НЕ со своим id
-    (это необходимо для того, чтобы подписываться на пользователя могли все, кроме него самого)
-    """
-    def has_permission(self, request, view):
-        return bool(
-            request.method in SAFE_METHODS or
-            request.user and request.user.is_authenticated and
-            request.user.id != view.kwargs['author_id']
+            request.user.id == view.kwargs.get(getattr(view, required_attr))
         )

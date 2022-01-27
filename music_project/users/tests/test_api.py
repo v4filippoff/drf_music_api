@@ -38,7 +38,7 @@ class BaseUserApiTestCase(TestCase):
 class UserProfileApiTestCase(BaseUserApiTestCase):
 
     def test_get_list(self):
-        url = reverse('users-list')
+        url = reverse('user-list')
         response = self.client.get(url)
         users = User.objects.all()
         serializer_data = UserProfileSerializer(users, many=True).data
@@ -47,7 +47,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.data, serializer_data)
 
     def test_get_filter(self):
-        url = reverse('users-list')
+        url = reverse('user-list')
         response = self.client.get(url, data={'country': 'USA'})
         users = User.objects.filter(country='USA')
         serializer_data = UserProfileSerializer(users, many=True).data
@@ -56,7 +56,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.data, serializer_data)
 
     def test_get_search(self):
-        url = reverse('users-list')
+        url = reverse('user-list')
         response = self.client.get(url, data={'search': 'test_user1'})
         users = User.objects.filter(username='test_user1')
         serializer_data = UserProfileSerializer(users, many=True).data
@@ -65,7 +65,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.data, serializer_data)
 
     def test_detail(self):
-        url = reverse('users-detail', args=(self.user1.id,))
+        url = reverse('user-detail', args=(self.user1.id,))
         response = self.client.get(url)
         user = User.objects.filter(id=self.user1.id).get()
         serializer_data = UserProfileSerializer(user).data
@@ -74,7 +74,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.data, serializer_data)
 
     def test_update(self):
-        url = reverse('users-detail', args=(self.user1.id,))
+        url = reverse('user-detail', args=(self.user1.id,))
         data = {
             'username': self.user1.username,
             'description': 'New description',
@@ -88,7 +88,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete(self):
-        url = reverse('users-detail', args=(self.user1.id,))
+        url = reverse('user-detail', args=(self.user1.id,))
         self.client.force_login(self.user1)
         response = self.client.delete(url)
 
@@ -97,7 +97,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertFalse(User.objects.filter(id=self.user1.id).exists())
 
     def test_update_not_owner(self):
-        url = reverse('users-detail', args=(self.user1.id,))
+        url = reverse('user-detail', args=(self.user1.id,))
         data = {
             'username': self.user1.username,
             'description': 'New description',
@@ -111,7 +111,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_not_owner(self):
-        url = reverse('users-detail', args=(self.user1.id,))
+        url = reverse('user-detail', args=(self.user1.id,))
         self.client.force_login(self.user2)
         response = self.client.delete(url)
 
@@ -185,7 +185,7 @@ class SocialLinksApiTestCase(BaseUserApiTestCase):
 class SubscriptionsApiTestCase(BaseUserApiTestCase):
 
     def test_get_list(self):
-        url = reverse('sub-list', args=(self.user1.id,))
+        url = reverse('subscriber-list', args=(self.user1.id,))
         response = self.client.get(url)
         subs = Subscription.objects.filter(author=self.user1)
         serializer_data = SubscriberSerializer(subs, many=True).data
@@ -194,7 +194,7 @@ class SubscriptionsApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.data, serializer_data)
 
     def test_subscribe(self):
-        url = reverse('sub-list', args=(self.user1.id,))
+        url = reverse('subscriber-list', args=(self.user1.id,))
         user4 = User.objects.create(username='user4')
         self.client.force_login(user4)
         response = self.client.post(url)
@@ -204,7 +204,7 @@ class SubscriptionsApiTestCase(BaseUserApiTestCase):
         self.assertTrue(Subscription.objects.filter(author=self.user1, user=user4).exists())
 
     def test_unsubscribe(self):
-        url = reverse('sub-list', args=(self.user1.id,))
+        url = reverse('subscriber-list', args=(self.user1.id,))
         self.client.force_login(self.user3)
         response = self.client.delete(url)
 
@@ -213,7 +213,7 @@ class SubscriptionsApiTestCase(BaseUserApiTestCase):
         self.assertFalse(Subscription.objects.filter(author=self.user1, user=self.user3).exists())
 
     def test_double_subscribe(self):
-        url = reverse('sub-list', args=(self.user1.id,))
+        url = reverse('subscriber-list', args=(self.user1.id,))
         self.client.force_login(self.user3)
         response = self.client.post(url)
 
@@ -221,7 +221,7 @@ class SubscriptionsApiTestCase(BaseUserApiTestCase):
         self.assertEqual(self.user1.subscribers.count(), 2)
 
     def test_unsubscribe_before_subscription(self):
-        url = reverse('sub-list', args=(self.user1.id,))
+        url = reverse('subscriber-list', args=(self.user1.id,))
         user4 = User.objects.create(username='user4')
         self.client.force_login(user4)
         response = self.client.delete(url)
@@ -230,7 +230,7 @@ class SubscriptionsApiTestCase(BaseUserApiTestCase):
         self.assertEqual(self.user1.subscribers.count(), 2)
 
     def test_subscribe_by_author(self):
-        url = reverse('sub-list', args=(self.user1.id,))
+        url = reverse('subscriber-list', args=(self.user1.id,))
         self.client.force_login(self.user1)
         response = self.client.post(url)
 
