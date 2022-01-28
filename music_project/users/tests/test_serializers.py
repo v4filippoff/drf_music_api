@@ -6,8 +6,8 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
-from users.models import User, SocialLink, Subscription
-from users.serializers import UserProfileSerializer, SubscriberSerializer
+from users.models import User, SocialLink, Follow
+from users.serializers import UserProfileSerializer, FollowingSerializer, FollowerSerializer
 
 
 class UserSerializerTestCase(TestCase):
@@ -78,7 +78,45 @@ class UserSerializerTestCase(TestCase):
         shutil.rmtree(dirname_with_image)
 
 
-class SubscriberSerializerTestCase(TestCase):
+class FollowingSerializerTestCase(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username='TestUser',
+            description='Test Description',
+            country='USA'
+        )
+        self.author1 = User.objects.create(
+            username='TestAuthor1',
+            description='Test Description',
+            country='Russia'
+        )
+        self.author2 = User.objects.create(
+            username='TestAuthor2',
+            description='Test Description',
+            country='Russia'
+        )
+        self.sub1 = Follow.objects.create(user=self.user, author=self.author1)
+        self.sub2 = Follow.objects.create(user=self.user, author=self.author2)
+
+    def test_all_fields(self):
+        data = FollowingSerializer([self.sub1, self.sub2], many=True).data
+        expected_data = [
+            {
+                'author': self.author1.id,
+                'author_name': 'TestAuthor1',
+                'url': f'/api/users/{self.author1.id}/'
+            },
+            {
+                'author': self.author2.id,
+                'author_name': 'TestAuthor2',
+                'url': f'/api/users/{self.author2.id}/'
+            }
+        ]
+        self.assertEqual(data, expected_data)
+
+
+class FollowerSerializerTestCase(TestCase):
 
     def setUp(self):
         self.author = User.objects.create(
@@ -96,20 +134,18 @@ class SubscriberSerializerTestCase(TestCase):
             description='Test Description2',
             country='Russia'
         )
-        self.sub1 = Subscription.objects.create(user=self.user1, author=self.author)
-        self.sub2 = Subscription.objects.create(user=self.user2, author=self.author)
+        self.sub1 = Follow.objects.create(user=self.user1, author=self.author)
+        self.sub2 = Follow.objects.create(user=self.user2, author=self.author)
 
     def test_all_fields(self):
-        data = SubscriberSerializer([self.sub1, self.sub2], many=True).data
+        data = FollowerSerializer([self.sub1, self.sub2], many=True).data
         expected_data = [
             {
-                'subscription_id': self.sub1.id,
-                'username': 'TestUser1',
+                'user_name': self.user1.username,
                 'url': f'/api/users/{self.user1.id}/'
             },
             {
-                'subscription_id': self.sub2.id,
-                'username': 'TestUser2',
+                'user_name': self.user2.username,
                 'url': f'/api/users/{self.user2.id}/'
             }
         ]

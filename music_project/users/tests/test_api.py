@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
-from users.models import SocialLink, Subscription
-from users.serializers import UserProfileSerializer, SocialLinkSerializer, SubscriberSerializer
+from users.models import SocialLink, Follow
+from users.serializers import UserProfileSerializer, SocialLinkSerializer, FollowingSerializer, FollowerSerializer
 
 User = get_user_model()
 
@@ -31,8 +31,9 @@ class BaseUserApiTestCase(TestCase):
         self.social_link2 = SocialLink.objects.create(user=self.user1, link='https://facebook.com')
         self.social_link3 = SocialLink.objects.create(user=self.user2, link='https://youtube.com')
 
-        self.sub1 = Subscription.objects.create(user=self.user2, author=self.user1)
-        self.sub2 = Subscription.objects.create(user=self.user3, author=self.user1)
+        self.sub1 = Follow.objects.create(user=self.user1, author=self.user2)
+        self.sub2 = Follow.objects.create(user=self.user1, author=self.user3)
+        self.sub3 = Follow.objects.create(user=self.user2, author=self.user3)
 
 
 class UserProfileApiTestCase(BaseUserApiTestCase):
@@ -182,58 +183,67 @@ class SocialLinksApiTestCase(BaseUserApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-class SubscriptionsApiTestCase(BaseUserApiTestCase):
+class FollowApiTestCase(BaseUserApiTestCase):
 
     def test_get_list(self):
-        url = reverse('subscriber-list', args=(self.user1.id,))
+        url = reverse('following-list', args=(self.user1.id,))
         response = self.client.get(url)
-        subs = Subscription.objects.filter(author=self.user1)
-        serializer_data = SubscriberSerializer(subs, many=True).data
+        following = Follow.objects.filter(user=self.user1)
+        serializer_data = FollowingSerializer(following, many=True).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer_data)
 
-    def test_subscribe(self):
-        url = reverse('subscriber-list', args=(self.user1.id,))
+    def test_follow(self):
+        url = reverse('following-list', args=(self.user1.id,))
         user4 = User.objects.create(username='user4')
-        self.client.force_login(user4)
-        response = self.client.post(url)
+        data = {
+            'author': user4.id
+        }
+        self.client.force_login(self.user1)
+        response = self.client.post(url, data=data, content_type='application/json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(self.user1.subscribers.count(), 3)
-        self.assertTrue(Subscription.objects.filter(author=self.user1, user=user4).exists())
+        self.assertEqual(self.user1.following.count(), 3)
+        self.assertTrue(Follow.objects.filter(user=self.user1, author=user4).exists())
 
-    def test_unsubscribe(self):
-        url = reverse('subscriber-list', args=(self.user1.id,))
-        self.client.force_login(self.user3)
+    def test_unfollow(self):
+        url = reverse('following-detail', args=(self.user1.id, self.user3.id))
+        self.client.force_login(self.user1)
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(self.user1.subscribers.count(), 1)
-        self.assertFalse(Subscription.objects.filter(author=self.user1, user=self.user3).exists())
+        self.assertEqual(self.user1.following.count(), 1)
+        self.assertFalse(Follow.objects.filter(user=self.user1, author=self.user3).exists())
 
-    def test_double_subscribe(self):
-        url = reverse('subscriber-list', args=(self.user1.id,))
-        self.client.force_login(self.user3)
-        response = self.client.post(url)
+    def test_double_follow(self):
+        url = reverse('following-list', args=(self.user1.id,))
+        data = {
+            'author': self.user3.id
+        }
+        self.client.force_login(self.user1)
+        response = self.client.post(url, data=data, content_type='application/json')
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(self.user1.subscribers.count(), 2)
+        self.assertEqual(self.user1.following.count(), 2)
 
-    def test_unsubscribe_before_subscription(self):
-        url = reverse('subscriber-list', args=(self.user1.id,))
+    def test_unfollow_before_follow(self):
         user4 = User.objects.create(username='user4')
-        self.client.force_login(user4)
+        url = reverse('following-detail', args=(self.user1.id, user4.id))
+        self.client.force_login(self.user1)
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(self.user1.subscribers.count(), 2)
+        self.assertEqual(self.user1.following.count(), 2)
 
-    def test_subscribe_by_author(self):
-        url = reverse('subscriber-list', args=(self.user1.id,))
+    def test_follow_self(self):
+        url = reverse('following-list', args=(self.user1.id,))
+        data = {
+            'author': self.user1.id
+        }
         self.client.force_login(self.user1)
-        response = self.client.post(url)
+        response = self.client.post(url, data=data, content_type='application/json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(self.user1.subscribers.count(), 2)
-        self.assertFalse(Subscription.objects.filter(author=self.user1, user=self.user1).exists())
+        self.assertEqual(self.user1.following.count(), 2)
+        self.assertFalse(Follow.objects.filter(user=self.user1, author=self.user1).exists())

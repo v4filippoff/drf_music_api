@@ -1,5 +1,5 @@
 from django.contrib import admin
-from users.models import User, SocialLink, Subscription
+from users.models import User, SocialLink, Follow
 
 
 @admin.register(User)
@@ -21,8 +21,8 @@ class SocialLinkAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Subscription)
-class SubscriptionLinkAdmin(admin.ModelAdmin):
+@admin.register(Follow)
+class FollowLinkAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'author',

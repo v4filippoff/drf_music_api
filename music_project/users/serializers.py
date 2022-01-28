@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.fields import SerializerMethodField, CharField
 from rest_framework.serializers import ModelSerializer
 
-from users.models import SocialLink, Subscription
+from users.models import SocialLink, Follow
 
 User = get_user_model()
 
@@ -31,12 +31,12 @@ class UserProfileSerializer(ModelSerializer):
         ]
 
 
-class SubscriptionSerializer(ModelSerializer):
+class FollowingSerializer(ModelSerializer):
     author_name = SerializerMethodField('get_author_name')
     url = CharField(source='author.get_absolute_url', read_only=True)
 
     class Meta:
-        model = Subscription
+        model = Follow
         fields = [
             'author',
             'author_name',
@@ -47,12 +47,12 @@ class SubscriptionSerializer(ModelSerializer):
         return obj.author.username
 
 
-class SubscriberSerializer(ModelSerializer):
+class FollowerSerializer(ModelSerializer):
     user_name = SerializerMethodField('get_user_name')
     url = CharField(source='user.get_absolute_url', read_only=True)
 
     class Meta:
-        model = Subscription
+        model = Follow
         fields = [
             'user_name',
             'url'

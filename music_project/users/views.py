@@ -9,9 +9,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from users.mixins import UserItemsMixin
-from users.models import Subscription, SocialLink
+from users.models import Follow, SocialLink
 from users.permissions import IsProfileOwnerOrReadOnly, IsUrlOwnerOrReadOnly
-from users.serializers import UserProfileSerializer, SocialLinkSerializer, SubscriptionSerializer, SubscriberSerializer
+from users.serializers import UserProfileSerializer, SocialLinkSerializer, FollowingSerializer, FollowerSerializer
 
 User = get_user_model()
 
@@ -41,17 +41,20 @@ class UpdateDestroySocialLinkView(UserItemsMixin, UpdateModelMixin, DestroyModel
     item_model = SocialLink
 
 
-class ListCreateSubscriptionView(UserItemsMixin, ListCreateAPIView):
-    serializer_class = SubscriptionSerializer
+class ListCreateFollowView(UserItemsMixin, ListCreateAPIView):
+    serializer_class = FollowingSerializer
     permission_classes = [IsUrlOwnerOrReadOnly]
-    item_model = Subscription
+    item_model = Follow
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         author = serializer.validated_data['author']
 
-        if not Subscription.objects.filter(user=request.user, author=author).exists():
+        if author == request.user:
+            return Response({'detail': 'Not allowed to follow self'}, status=status.HTTP_403_FORBIDDEN)
+
+        if not Follow.objects.filter(user=request.user, author=author).exists():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -63,15 +66,15 @@ class ListCreateSubscriptionView(UserItemsMixin, ListCreateAPIView):
         serializer.save(user=self.request.user, author=author)
 
 
-class DestroySubscriptionView(UserItemsMixin, DestroyAPIView):
+class DestroyFollowView(UserItemsMixin, DestroyAPIView):
     permission_classes = [IsUrlOwnerOrReadOnly]
     lookup_field = 'author_id'
-    item_model = Subscription
+    item_model = Follow
 
 
-class ListSubscriberView(UserItemsMixin, ListAPIView):
-    serializer_class = SubscriberSerializer
+class ListFollowersView(UserItemsMixin, ListAPIView):
+    serializer_class = FollowerSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    item_model = Subscription
+    item_model = Follow
     owner_model_field = 'author'
     owner_url_kwarg = 'author_id'

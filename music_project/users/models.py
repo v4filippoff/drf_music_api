@@ -33,12 +33,12 @@ class SocialLink(models.Model):
         return '{0}: {1}'.format(self.user.username, self.link)
 
 
-class Subscription(models.Model):
+class Follow(models.Model):
     """
     Модель подписки на автора
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscribers')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
 
     def __str__(self):
-        return '{0} is subscribed on {1}'.format(self.user, self.author)
+        return '{0} is followed on {1}'.format(self.user, self.author)
