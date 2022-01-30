@@ -46,6 +46,9 @@ class ListCreateFollowView(UserItemsMixin, ListCreateAPIView):
     permission_classes = [IsUrlOwnerOrReadOnly]
     item_model = Follow
 
+    def get_queryset(self):
+        return super().get_queryset().select_related('author')
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -78,3 +81,6 @@ class ListFollowersView(UserItemsMixin, ListAPIView):
     item_model = Follow
     owner_model_field = 'author'
     owner_url_kwarg = 'author_id'
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('user')
