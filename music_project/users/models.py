@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 
@@ -15,7 +16,8 @@ class User(AbstractUser):
         'User avatar',
         upload_to=get_avatar_upload_path,
         blank=True,
-        null=True
+        null=True,
+        validators=[FileExtensionValidator(['jpg', 'png'])]
     )
 
     def get_absolute_url(self):

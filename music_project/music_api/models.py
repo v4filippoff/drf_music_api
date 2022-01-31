@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from music_api.services import get_track_cover_upload_path, get_track_upload_path, get_album_cover_upload_path
@@ -28,7 +29,8 @@ class Album(models.Model):
         'Album cover',
         upload_to=get_album_cover_upload_path,
         blank=True,
-        null=True
+        null=True,
+        validators=[FileExtensionValidator(['jpg', 'png'])]
     )
     plays_count = models.PositiveIntegerField('Plays count', default=0)
 
@@ -51,9 +53,14 @@ class Track(models.Model):
         'Track cover',
         upload_to=get_track_cover_upload_path,
         blank=True,
-        null=True
+        null=True,
+        validators=[FileExtensionValidator(['jpg', 'png'])]
     )
-    file = models.FileField('Track file', upload_to=get_track_upload_path)
+    file = models.FileField(
+        'Track file',
+        upload_to=get_track_upload_path,
+        validators=[FileExtensionValidator(['mp3', 'wav'])]
+    )
     album = models.ForeignKey(Album, on_delete=models.SET_NULL, blank=True, null=True)
     plays_count = models.PositiveIntegerField('Plays count', default=0)
     downloads_count = models.PositiveIntegerField('Downloads count', default=0)

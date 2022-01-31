@@ -8,6 +8,9 @@ User = get_user_model()
 
 
 class SocialLinkSerializer(ModelSerializer):
+    """
+    Сериализатор для пользловательских ссылок на соц.сети
+    """
     class Meta:
         model = SocialLink
         fields = [
@@ -17,6 +20,9 @@ class SocialLinkSerializer(ModelSerializer):
 
 
 class UserProfileSerializer(ModelSerializer):
+    """
+    Сериализатор для профиля пользователя
+    """
     social_links = SocialLinkSerializer(many=True, read_only=True)
 
     class Meta:
@@ -32,6 +38,9 @@ class UserProfileSerializer(ModelSerializer):
 
 
 class FollowingSerializer(ModelSerializer):
+    """
+    Сериализатор для собственных подписок пользователя
+    """
     author_name = SerializerMethodField('get_author_name')
     url = CharField(source='author.get_absolute_url', read_only=True)
 
@@ -48,6 +57,9 @@ class FollowingSerializer(ModelSerializer):
 
 
 class FollowerSerializer(ModelSerializer):
+    """
+    Сериализатор для подписчиков пользователя (автора)
+    """
     user_name = SerializerMethodField('get_user_name')
     url = CharField(source='user.get_absolute_url', read_only=True)
 
