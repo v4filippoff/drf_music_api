@@ -35,6 +35,7 @@ class UserProfileSerializer(ModelSerializer):
             'avatar',
             'social_links'
         ]
+        extra_kwargs = {'username': {'read_only': True}}
 
 
 class FollowingSerializer(ModelSerializer):
@@ -66,6 +67,7 @@ class FollowerSerializer(ModelSerializer):
     class Meta:
         model = Follow
         fields = [
+            'user',
             'user_name',
             'url'
         ]

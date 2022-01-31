@@ -30,7 +30,7 @@ class Album(models.Model):
         upload_to=get_album_cover_upload_path,
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(['jpg', 'png'])]
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]
     )
     plays_count = models.PositiveIntegerField('Plays count', default=0)
 
@@ -54,7 +54,7 @@ class Track(models.Model):
         upload_to=get_track_cover_upload_path,
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(['jpg', 'png'])]
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]
     )
     file = models.FileField(
         'Track file',

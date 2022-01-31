@@ -141,10 +141,12 @@ class FollowerSerializerTestCase(TestCase):
         data = FollowerSerializer([self.sub1, self.sub2], many=True).data
         expected_data = [
             {
+                'user': self.user1.id,
                 'user_name': self.user1.username,
                 'url': f'/api/users/{self.user1.id}/'
             },
             {
+                'user': self.user2.id,
                 'user_name': self.user2.username,
                 'url': f'/api/users/{self.user2.id}/'
             }

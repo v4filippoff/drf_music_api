@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, DestroyAPIView
 from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -20,6 +21,7 @@ class UserProfileViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, D
     queryset = User.objects.prefetch_related('social_links')
     serializer_class = UserProfileSerializer
     permission_classes = [IsProfileOwnerOrReadOnly]
+    parser_classes = [JSONParser, MultiPartParser]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filter_fields = ['country']
     search_fields = ['username']

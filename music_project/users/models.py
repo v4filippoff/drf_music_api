@@ -17,7 +17,7 @@ class User(AbstractUser):
         upload_to=get_avatar_upload_path,
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(['jpg', 'png'])]
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]
     )
 
     def get_absolute_url(self):
