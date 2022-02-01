@@ -11,20 +11,41 @@ class Genre(models.Model):
     """
     Жанр музыки
     """
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=50, unique=True)
+
+    def save(self, *args, **kwargs):
+        self.title = self.title.lower()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Genre: {self.title}'
 
 
-class Album(models.Model):
+class MusicEntity(models.Model):
+    """
+    Абстрактная музыкальная сущность
+    """
+    authors = models.ManyToManyField(User)
+    title = models.CharField('Title', max_length=50)
+    genres = models.ManyToManyField(Genre)
+    date_added = models.DateField('Date added', auto_now_add=True)
+    plays_count = models.PositiveIntegerField('Plays count', default=0)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return '{0}: {1} ({2})'.format(
+            self._meta.model_name.title(),
+            self.title,
+            ', '.join(author.username for author in self.authors.all())
+        )
+
+
+class Album(MusicEntity):
     """
     Альбом с треками
     """
-    authors = models.ManyToManyField(User, related_name='albums')
-    title = models.CharField('Title', max_length=50)
-    genres = models.ManyToManyField(Genre, related_name='albums')
-    date_added = models.DateField('Date added', auto_now_add=True)
     cover = models.ImageField(
         'Album cover',
         upload_to=get_album_cover_upload_path,
@@ -32,23 +53,12 @@ class Album(models.Model):
         null=True,
         validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]
     )
-    plays_count = models.PositiveIntegerField('Plays count', default=0)
-
-    def __str__(self):
-        return 'Album: {0} ({1})'.format(
-            self.title,
-            ', '.join(author.name for author in self.authors.all())
-        )
 
 
-class Track(models.Model):
+class Track(MusicEntity):
     """
     Музыкальный трек
     """
-    authors = models.ManyToManyField(User, related_name='tracks')
-    title = models.CharField('Title', max_length=50)
-    genres = models.ManyToManyField(Genre, related_name='tracks')
-    date_added = models.DateField('Date added', auto_now_add=True)
     cover = models.ImageField(
         'Track cover',
         upload_to=get_track_cover_upload_path,
@@ -62,11 +72,4 @@ class Track(models.Model):
         validators=[FileExtensionValidator(['mp3', 'wav'])]
     )
     album = models.ForeignKey(Album, on_delete=models.SET_NULL, blank=True, null=True)
-    plays_count = models.PositiveIntegerField('Plays count', default=0)
     downloads_count = models.PositiveIntegerField('Downloads count', default=0)
-
-    def __str__(self):
-        return 'Track: {0} ({1})'.format(
-            self.title,
-            ', '.join(author.name for author in self.authors.all())
-        )
