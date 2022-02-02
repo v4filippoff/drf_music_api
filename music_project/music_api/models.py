@@ -25,7 +25,7 @@ class MusicEntity(models.Model):
     """
     Абстрактная музыкальная сущность
     """
-    authors = models.ManyToManyField(User)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField('Title', max_length=50)
     genres = models.ManyToManyField(Genre)
     date_added = models.DateField('Date added', auto_now_add=True)
@@ -38,7 +38,7 @@ class MusicEntity(models.Model):
         return '{0}: {1} ({2})'.format(
             self._meta.model_name.title(),
             self.title,
-            ', '.join(author.username for author in self.authors.all())
+            self.author.username
         )
 
 

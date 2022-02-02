@@ -10,8 +10,8 @@ class User(AbstractUser):
     """
     Модель пользователя
     """
-    description = models.CharField('User description', max_length=2000, blank=True, null=True)
-    country = models.CharField('Country', max_length=50, blank=True, null=True)
+    description = models.CharField('User description', max_length=2000, blank=True)
+    country = models.CharField('Country', max_length=50, blank=True)
     avatar = models.ImageField(
         'User avatar',
         upload_to=get_avatar_upload_path,

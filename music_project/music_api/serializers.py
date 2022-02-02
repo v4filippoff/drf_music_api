@@ -31,12 +31,14 @@ class CreateAlbumSerializer(ModelSerializer):
     """
     Сериализатор для создания альбома
     """
+    author = MusicAuthorSerializer(read_only=True)
+
     class Meta:
         model = Album
         fields = (
             'id',
             'title',
-            'authors',
+            'author',
             'genres',
             'date_added',
             'cover',
@@ -49,7 +51,6 @@ class ViewAlbumSerializer(CreateAlbumSerializer):
     """
     Сериализатор для просмотра альбома
     """
-    authors = MusicAuthorSerializer(many=True, read_only=True)
     genres = GenreSerializer(many=True, read_only=True)
 
 
@@ -69,12 +70,14 @@ class CreateTrackSerializer(ModelSerializer):
     """
     Сериализатор для создания трека
     """
+    author = MusicAuthorSerializer(read_only=True)
+
     class Meta:
         model = Track
         fields = (
             'id',
             'title',
-            'authors',
+            'author',
             'genres',
             'date_added',
             'cover',
@@ -90,6 +93,5 @@ class ViewTrackSerializer(CreateTrackSerializer):
     """
     Сериализатор для просмотра трека
     """
-    authors = MusicAuthorSerializer(many=True, read_only=True)
     genres = GenreSerializer(many=True, read_only=True)
     album = SimpleViewAlbumSerializer(read_only=True)

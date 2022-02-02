@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
 from users.models import SocialLink, Follow
-from users.serializers import UserProfileSerializer, SocialLinkSerializer, FollowingSerializer, FollowerSerializer
+from users.serializers import UserProfileSerializer, SocialLinkSerializer, FollowingSerializer
+from users.tests.utils import delete_avatars, add_testserver_prefix_to_avatar_files
 
 User = get_user_model()
 
@@ -15,12 +17,14 @@ class BaseUserApiTestCase(TestCase):
         self.user1 = User.objects.create(
             username='test_user1',
             description='Test description1',
-            country='Russia'
+            country='Russia',
+            avatar=SimpleUploadedFile('avatar1.jpg', b'aaa')
         )
         self.user2 = User.objects.create(
             username='test_user2',
             description='Test description2',
-            country='Usa'
+            country='Usa',
+            avatar=SimpleUploadedFile('avatar2.jpg', b'ccc')
         )
         self.user3 = User.objects.create(
             username='test_user3',
@@ -35,6 +39,9 @@ class BaseUserApiTestCase(TestCase):
         self.sub2 = Follow.objects.create(user=self.user1, author=self.user3)
         self.sub3 = Follow.objects.create(user=self.user2, author=self.user3)
 
+    def tearDown(self):
+        delete_avatars(self.user1.avatar, self.user2.avatar)
+
 
 class UserProfileApiTestCase(BaseUserApiTestCase):
 
@@ -43,6 +50,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         response = self.client.get(url)
         users = User.objects.all()
         serializer_data = UserProfileSerializer(users, many=True).data
+        add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer_data)
@@ -52,6 +60,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         response = self.client.get(url, data={'country': 'USA'})
         users = User.objects.filter(country='USA')
         serializer_data = UserProfileSerializer(users, many=True).data
+        add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer_data)
@@ -61,6 +70,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         response = self.client.get(url, data={'search': 'test_user1'})
         users = User.objects.filter(username='test_user1')
         serializer_data = UserProfileSerializer(users, many=True).data
+        add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer_data)
@@ -70,8 +80,9 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         response = self.client.get(url)
         user = User.objects.filter(id=self.user1.id).get()
         serializer_data = UserProfileSerializer(user).data
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        add_testserver_prefix_to_avatar_files([serializer_data])
 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer_data)
 
     def test_update(self):

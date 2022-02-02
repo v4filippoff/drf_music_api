@@ -1,13 +1,9 @@
-from io import BytesIO
-import os
-import shutil
-
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
 
 from users.models import User, SocialLink, Follow
 from users.serializers import UserProfileSerializer, FollowingSerializer, FollowerSerializer
+from users.tests.utils import delete_avatars
 
 
 class UserSerializerTestCase(TestCase):
@@ -16,7 +12,8 @@ class UserSerializerTestCase(TestCase):
         self.user1 = User.objects.create(
             username='TestUser',
             description='Test Description',
-            country='Russia'
+            country='Russia',
+            avatar=SimpleUploadedFile('avatar.jpg', b'aaa')
         )
         self.user2 = User.objects.create(
             username='TestUser2',
@@ -27,12 +24,6 @@ class UserSerializerTestCase(TestCase):
         self.social_link1 = SocialLink.objects.create(user=self.user1, link='https://test.com')
         self.social_link2 = SocialLink.objects.create(user=self.user1, link='https://facebook.com')
         self.social_link3 = SocialLink.objects.create(user=self.user2, link='https://youtube.com')
-
-        image = BytesIO()
-        Image.new('RGB', (100, 100)).save(image, 'JPEG')
-        image.seek(0)
-        self.user1.avatar = SimpleUploadedFile('image.jpg', image.getvalue())
-        self.user1.save()
 
     def test_all_fields(self):
         data = UserProfileSerializer([self.user1, self.user2], many=True).data
@@ -71,11 +62,7 @@ class UserSerializerTestCase(TestCase):
         self.assertEqual(data, expected_data)
 
     def tearDown(self):
-        """
-        Удаляем медиа-директорию тестового пользователя
-        """
-        dirname_with_image = os.path.dirname(self.user1.avatar.path)
-        shutil.rmtree(dirname_with_image)
+        delete_avatars(self.user1.avatar)
 
 
 class FollowingSerializerTestCase(TestCase):

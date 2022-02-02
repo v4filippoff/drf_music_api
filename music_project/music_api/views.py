@@ -15,4 +15,4 @@ class ListGenreTracksView(ListAPIView):
 
     def get_queryset(self):
         genre = get_object_or_404(Genre, title=self.kwargs['title'])
-        return genre.track_set.select_related('album').prefetch_related('authors', 'genres')
+        return genre.track_set.select_related('author', 'album').prefetch_related('genres')
