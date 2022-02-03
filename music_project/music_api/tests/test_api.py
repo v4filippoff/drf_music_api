@@ -11,7 +11,7 @@ from music_api.tests.utils import delete_tracks, add_testserver_prefix_to_track_
 User = get_user_model()
 
 
-class GenreApiTestCase(TestCase):
+class BaseMusicApiTestCase(TestCase):
 
     def setUp(self):
         self.user1 = User.objects.create(username='user1')
@@ -31,6 +31,12 @@ class GenreApiTestCase(TestCase):
             file=SimpleUploadedFile('track2.mp3', b'uuu')
         )
         self.track2.genres.add(self.genre)
+
+    def tearDown(self):
+        delete_tracks(self.track1.file, self.track2.file)
+
+
+class GenreApiTestCase(BaseMusicApiTestCase):
 
     def test_get_list(self):
         url = reverse('genre-list')
@@ -57,5 +63,81 @@ class GenreApiTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def tearDown(self):
-        delete_tracks(self.track1.file, self.track2.file)
+
+class TrackApiTestCase(BaseMusicApiTestCase):
+
+    def test_get_list(self):
+        url = reverse('track-list')
+        response = self.client.get(url)
+        tracks = Track.objects.all()
+        serializer_data = ViewTrackSerializer(tracks, many=True).data
+        add_testserver_prefix_to_track_files(serializer_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer_data)
+
+    def test_create(self):
+        url = reverse('track-list')
+        data = {
+            'title': 'New track',
+            'genres': [self.genre.id],
+            'file': SimpleUploadedFile('new_track.mp3', b'eee')
+        }
+        self.client.force_login(self.user1)
+        response = self.client.post(url, data=data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Track.objects.count(), 3)
+        self.assertEqual(Track.objects.last().author, self.user1)
+
+    def test_detail(self):
+        url = reverse('track-detail', args=(self.track1.id,))
+        response = self.client.get(url)
+        track = Track.objects.filter(id=self.track1.id).get()
+        serializer_data = ViewTrackSerializer(track).data
+        add_testserver_prefix_to_track_files([serializer_data])
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer_data)
+
+    def test_partial_update(self):
+        url = reverse('track-detail', args=(self.track1.id,))
+        data = {
+            'title': 'Super new track',
+        }
+        self.client.force_login(self.user1)
+        response = self.client.patch(url, data=data, content_type='application/json')
+        self.track1.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data['title'], self.track1.title)
+
+    def test_delete(self):
+        url = reverse('track-detail', args=(self.track1.id,))
+        self.client.force_login(self.user1)
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Track.objects.count(), 1)
+        self.assertFalse(Track.objects.filter(id=self.track1.id).exists())
+
+    def test_partial_update_not_author(self):
+        url = reverse('track-detail', args=(self.track1.id,))
+        data = {
+            'title': 'Super new track',
+        }
+        self.client.force_login(self.user2)
+        response = self.client.patch(url, data=data, content_type='application/json')
+        self.track1.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.track1.title, 'Track1')
+
+    def test_delete_not_author(self):
+        url = reverse('track-detail', args=(self.track1.id,))
+        self.client.force_login(self.user2)
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Track.objects.count(), 2)
+        self.assertTrue(Track.objects.filter(id=self.track1.id).exists())
