@@ -80,7 +80,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         response = self.client.get(url)
         user = User.objects.filter(id=self.user1.id).get()
         serializer_data = UserProfileSerializer(user).data
-        add_testserver_prefix_to_avatar_files([serializer_data])
+        add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer_data)

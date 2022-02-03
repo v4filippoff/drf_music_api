@@ -20,6 +20,8 @@ def add_testserver_prefix_to_avatar_files(serialized_users):
     с url файла при извлечении response.data
     """
     prefix = 'http://testserver'
+    if not isinstance(serialized_users, list):
+        serialized_users = [serialized_users,]
     for user in serialized_users:
         if user['avatar']:
             user['avatar'] = prefix + user['avatar']

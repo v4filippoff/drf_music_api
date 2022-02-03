@@ -20,5 +20,7 @@ def add_testserver_prefix_to_track_files(serialized_tracks):
     с url файла при извлечении response.data
     """
     prefix = 'http://testserver'
+    if not isinstance(serialized_tracks, list):
+        serialized_tracks = [serialized_tracks,]
     for track in serialized_tracks:
         track['file'] = prefix + track['file']
