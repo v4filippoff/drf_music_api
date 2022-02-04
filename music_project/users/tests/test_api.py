@@ -1,16 +1,18 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework import status
 
 from users.models import SocialLink, Follow
 from users.serializers import UserProfileSerializer, SocialLinkSerializer, FollowingSerializer
-from users.tests.utils import delete_avatars, add_testserver_prefix_to_avatar_files
+from users.tests.utils import add_testserver_prefix_to_avatar_files, remove_test_media_dir
 
 User = get_user_model()
 
 
+@override_settings(MEDIA_ROOT=settings.TEST_MEDIA_ROOT)
 class BaseUserApiTestCase(TestCase):
 
     def setUp(self):
@@ -40,7 +42,7 @@ class BaseUserApiTestCase(TestCase):
         self.sub3 = Follow.objects.create(user=self.user2, author=self.user3)
 
     def tearDown(self):
-        delete_avatars(self.user1.avatar, self.user2.avatar)
+        remove_test_media_dir()
 
 
 class UserProfileApiTestCase(BaseUserApiTestCase):
@@ -53,7 +55,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_get_filter(self):
         url = reverse('user-list')
@@ -63,7 +65,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_get_search(self):
         url = reverse('user-list')
@@ -73,7 +75,7 @@ class UserProfileApiTestCase(BaseUserApiTestCase):
         add_testserver_prefix_to_avatar_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_detail(self):
         url = reverse('user-detail', args=(self.user1.id,))
@@ -141,7 +143,7 @@ class SocialLinksApiTestCase(BaseUserApiTestCase):
         serializer_data = SocialLinkSerializer(social_links, many=True).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_create(self):
         url = reverse('social-link-list', args=(self.user1.id,))
@@ -203,7 +205,7 @@ class FollowApiTestCase(BaseUserApiTestCase):
         serializer_data = FollowingSerializer(following, many=True).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_follow(self):
         url = reverse('following-list', args=(self.user1.id,))

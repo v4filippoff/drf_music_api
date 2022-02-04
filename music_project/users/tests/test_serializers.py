@@ -1,11 +1,13 @@
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from users.models import User, SocialLink, Follow
 from users.serializers import UserProfileSerializer, FollowingSerializer, FollowerSerializer
-from users.tests.utils import delete_avatars
+from users.tests.utils import remove_test_media_dir
 
 
+@override_settings(MEDIA_ROOT=settings.TEST_MEDIA_ROOT)
 class UserSerializerTestCase(TestCase):
 
     def setUp(self):
@@ -62,8 +64,8 @@ class UserSerializerTestCase(TestCase):
         self.assertEqual(data, expected_data)
 
     def tearDown(self):
-        delete_avatars(self.user1.avatar)
-
+        remove_test_media_dir()
+        
 
 class FollowingSerializerTestCase(TestCase):
 

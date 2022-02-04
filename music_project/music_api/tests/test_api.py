@@ -1,16 +1,18 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework import status
 
 from music_api.models import Genre, Album, Track
 from music_api.serializers import GenreSerializer, ViewTrackSerializer, ViewAlbumSerializer
-from music_api.tests.utils import delete_tracks, add_testserver_prefix_to_track_files
+from music_api.tests.utils import remove_test_media_dir, add_testserver_prefix_to_track_files
 
 User = get_user_model()
 
 
+@override_settings(MEDIA_ROOT=settings.TEST_MEDIA_ROOT)
 class BaseMusicApiTestCase(TestCase):
 
     def setUp(self):
@@ -33,7 +35,7 @@ class BaseMusicApiTestCase(TestCase):
         self.track2.genres.add(self.genre)
 
     def tearDown(self):
-        delete_tracks(self.track1.file, self.track2.file)
+        remove_test_media_dir()
 
 
 class GenreApiTestCase(BaseMusicApiTestCase):
@@ -45,20 +47,20 @@ class GenreApiTestCase(BaseMusicApiTestCase):
         serializer_data = GenreSerializer(genres, many=True).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_get_track_list(self):
-        url = reverse('genre-track-list', args=(self.genre.title,))
+        url = reverse('genre-tracks-list', args=(self.genre.title,))
         response = self.client.get(url)
         tracks = self.genre.track_set.all()
         serializer_data = ViewTrackSerializer(tracks, many=True).data
         add_testserver_prefix_to_track_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_genre_404_not_found(self):
-        url = reverse('genre-track-list', args=('fake-genre',))
+        url = reverse('genre-tracks-list', args=('fake-genre',))
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -74,7 +76,7 @@ class TrackApiTestCase(BaseMusicApiTestCase):
         add_testserver_prefix_to_track_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_create(self):
         url = reverse('track-list')
@@ -150,7 +152,7 @@ class TrackApiTestCase(BaseMusicApiTestCase):
         add_testserver_prefix_to_track_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_get_album_tracks(self):
         url = reverse('album-tracks-list', args=(self.album.id,))
@@ -160,7 +162,7 @@ class TrackApiTestCase(BaseMusicApiTestCase):
         add_testserver_prefix_to_track_files(serializer_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
 
 class AlbumApiTestCase(BaseMusicApiTestCase):
@@ -172,7 +174,7 @@ class AlbumApiTestCase(BaseMusicApiTestCase):
         serializer_data = ViewAlbumSerializer(albums, many=True).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer_data)
+        self.assertEqual(response.data['results'], serializer_data)
 
     def test_create(self):
         url = reverse('album-list')

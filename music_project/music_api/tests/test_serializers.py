@@ -1,11 +1,12 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from music_api.models import Genre, Album, Track
 from music_api.serializers import GenreSerializer, MusicAuthorSerializer, CreateAlbumSerializer, ViewAlbumSerializer, \
     SimpleViewAlbumSerializer, ViewTrackSerializer, CreateTrackSerializer
-from music_api.tests.utils import delete_tracks
+from music_api.tests.utils import remove_test_media_dir
 
 User = get_user_model()
 
@@ -97,6 +98,7 @@ class AlbumSerializerTestCase(TestCase):
         self.assertEqual(data, expected_data)
 
 
+@override_settings(MEDIA_ROOT=settings.TEST_MEDIA_ROOT)
 class TrackSerializerTestCase(TestCase):
 
     def setUp(self):
@@ -154,4 +156,4 @@ class TrackSerializerTestCase(TestCase):
         self.assertEqual(data, expected_data)
 
     def tearDown(self):
-        delete_tracks(self.track.file)
+        remove_test_media_dir()

@@ -1,17 +1,16 @@
-import os
 import shutil
 
+from django.conf import settings
 
-def delete_avatars(*avatars):
+
+def remove_test_media_dir():
     """
-    Удаляет медиа-директории с аватарами пользователей
+    Удаляет тестовую медиа-директорию
     """
-    for avatar in avatars:
-        dirname_with_image = os.path.dirname(avatar.path)
-        try:
-            shutil.rmtree(dirname_with_image)
-        except FileNotFoundError:
-            pass
+    try:
+        shutil.rmtree(settings.TEST_MEDIA_ROOT)
+    except FileNotFoundError:
+        pass
 
 
 def add_testserver_prefix_to_avatar_files(serialized_users):

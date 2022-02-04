@@ -1,17 +1,16 @@
-import os
 import shutil
 
+from django.conf import settings
 
-def delete_tracks(*track_files):
+
+def remove_test_media_dir():
     """
-    Удаляет медиа-директории с треками
+    Удаляет тестовую медиа-директорию
     """
-    for file in track_files:
-        dirname_with_track = os.path.dirname(file.path)
-        try:
-            shutil.rmtree(dirname_with_track)
-        except FileNotFoundError:
-            pass
+    try:
+        shutil.rmtree(settings.TEST_MEDIA_ROOT)
+    except FileNotFoundError:
+        pass
 
 
 def add_testserver_prefix_to_track_files(serialized_tracks):
