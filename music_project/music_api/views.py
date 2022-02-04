@@ -1,9 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
+from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.viewsets import ModelViewSet
 
-from music_api.generics import MusicEntityViewSet
+from music_api.mixins import MusicEntityFilterBackendsMixin, SerializerSetMixin
 from music_api.models import Genre, Track, Album
+from music_api.permissions import IsAuthorOrReadOnly
 from music_api.serializers import GenreSerializer, ViewTrackSerializer, CreateTrackSerializer, ViewAlbumSerializer, \
     CreateAlbumSerializer
 
@@ -15,23 +19,28 @@ class ListGenreView(ListAPIView):
     serializer_class = GenreSerializer
 
 
-class ListGenreTracksView(ListAPIView):
+class ListGenreTracksView(MusicEntityFilterBackendsMixin, ListAPIView):
     serializer_class = ViewTrackSerializer
 
     def get_queryset(self):
         genre = get_object_or_404(Genre, title=self.kwargs['title'])
-        return genre.track_set.select_related('author', 'album').prefetch_related('genres')
+        return genre.track_set.all()
 
 
-class TrackViewSet(MusicEntityViewSet):
+class TrackViewSet(SerializerSetMixin, MusicEntityFilterBackendsMixin, ModelViewSet):
     queryset = Track.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+    parser_classes = [JSONParser, MultiPartParser]
     serializer_set = {
         'read': ViewTrackSerializer,
         'write': CreateTrackSerializer
     }
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
-class ListUserTracksView(ListAPIView):
+
+class ListUserTracksView(MusicEntityFilterBackendsMixin, ListAPIView):
     serializer_class = ViewTrackSerializer
 
     def get_queryset(self):
@@ -39,15 +48,20 @@ class ListUserTracksView(ListAPIView):
         return Track.objects.filter(author=user)
 
 
-class AlbumViewSet(MusicEntityViewSet):
+class AlbumViewSet(SerializerSetMixin, MusicEntityFilterBackendsMixin, ModelViewSet):
     queryset = Album.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+    parser_classes = [JSONParser, MultiPartParser]
     serializer_set = {
         'read': ViewAlbumSerializer,
         'write': CreateAlbumSerializer
     }
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
-class ListAlbumTracksView(ListAPIView):
+
+class ListAlbumTracksView(MusicEntityFilterBackendsMixin, ListAPIView):
     serializer_class = ViewAlbumSerializer
 
     def get_queryset(self):
