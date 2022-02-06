@@ -14,12 +14,12 @@ from music_api.serializers import GenreSerializer, ViewTrackSerializer, CreateTr
 User = get_user_model()
 
 
-class ListGenreView(ListAPIView):
+class GenreListView(ListAPIView):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
-class ListGenreTracksView(MusicEntityFilterBackendsMixin, ListAPIView):
+class GenreTracksListView(MusicEntityFilterBackendsMixin, ListAPIView):
     serializer_class = ViewTrackSerializer
 
     def get_queryset(self):
@@ -40,7 +40,7 @@ class TrackViewSet(SerializerSetMixin, MusicEntityFilterBackendsMixin, ModelView
         serializer.save(author=self.request.user)
 
 
-class ListUserTracksView(MusicEntityFilterBackendsMixin, ListAPIView):
+class UserTracksListView(MusicEntityFilterBackendsMixin, ListAPIView):
     serializer_class = ViewTrackSerializer
 
     def get_queryset(self):
@@ -61,7 +61,7 @@ class AlbumViewSet(SerializerSetMixin, MusicEntityFilterBackendsMixin, ModelView
         serializer.save(author=self.request.user)
 
 
-class ListAlbumTracksView(MusicEntityFilterBackendsMixin, ListAPIView):
+class AlbumTracksListView(MusicEntityFilterBackendsMixin, ListAPIView):
     serializer_class = ViewAlbumSerializer
 
     def get_queryset(self):

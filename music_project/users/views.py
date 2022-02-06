@@ -27,7 +27,7 @@ class UserProfileViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, D
     search_fields = ['username']
 
 
-class ListCreateSocialLinkView(UserItemsMixin, ListCreateAPIView):
+class SocialLinkListCreateView(UserItemsMixin, ListCreateAPIView):
     serializer_class = SocialLinkSerializer
     permission_classes = [IsUrlOwnerOrReadOnly]
     item_model = SocialLink
@@ -36,14 +36,14 @@ class ListCreateSocialLinkView(UserItemsMixin, ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-class UpdateDestroySocialLinkView(UserItemsMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet):
+class SocialLinkUpdateDestroyView(UserItemsMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet):
     serializer_class = SocialLinkSerializer
     lookup_url_kwarg = 'link_id'
     permission_classes = [IsUrlOwnerOrReadOnly]
     item_model = SocialLink
 
 
-class ListCreateFollowView(UserItemsMixin, ListCreateAPIView):
+class FollowListCreateView(UserItemsMixin, ListCreateAPIView):
     serializer_class = FollowingSerializer
     permission_classes = [IsUrlOwnerOrReadOnly]
     item_model = Follow
@@ -71,13 +71,13 @@ class ListCreateFollowView(UserItemsMixin, ListCreateAPIView):
         serializer.save(user=self.request.user, author=author)
 
 
-class DestroyFollowView(UserItemsMixin, DestroyAPIView):
+class FollowDestroyView(UserItemsMixin, DestroyAPIView):
     permission_classes = [IsUrlOwnerOrReadOnly]
     lookup_field = 'author_id'
     item_model = Follow
 
 
-class ListFollowersView(UserItemsMixin, ListAPIView):
+class FollowersListView(UserItemsMixin, ListAPIView):
     serializer_class = FollowerSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     item_model = Follow
