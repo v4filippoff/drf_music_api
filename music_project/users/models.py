@@ -10,6 +10,7 @@ class User(AbstractUser):
     """
     Модель пользователя
     """
+    email = models.EmailField('Email address', unique=True)
     description = models.CharField('User description', max_length=2000, blank=True)
     country = models.CharField('Country', max_length=50, blank=True)
     avatar = models.ImageField(
