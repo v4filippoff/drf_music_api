@@ -16,8 +16,8 @@ User = get_user_model()
 class BaseMusicApiTestCase(TestCase):
 
     def setUp(self):
-        self.user1 = User.objects.create(username='user1')
-        self.user2 = User.objects.create(username='user2')
+        self.user1 = User.objects.create(username='user1', email='user1@gmail.com')
+        self.user2 = User.objects.create(username='user2', email='user2@gmail.com')
         self.genre = Genre.objects.create(title='classical')
         self.album = Album.objects.create(title='Album', author=self.user1)
         self.album.genres.add(self.genre)

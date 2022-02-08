@@ -13,12 +13,14 @@ class UserSerializerTestCase(TestCase):
     def setUp(self):
         self.user1 = User.objects.create(
             username='TestUser',
+            email='user1@gmail.com',
             description='Test Description',
             country='Russia',
             avatar=SimpleUploadedFile('avatar.jpg', b'aaa')
         )
         self.user2 = User.objects.create(
             username='TestUser2',
+            email='user2@gmail.com',
             description='Test Description2',
             country='USA'
         )
@@ -72,16 +74,19 @@ class FollowingSerializerTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create(
             username='TestUser',
+            email='user@gmail.com',
             description='Test Description',
             country='USA'
         )
         self.author1 = User.objects.create(
             username='TestAuthor1',
+            email='author1@gmail.com',
             description='Test Description',
             country='Russia'
         )
         self.author2 = User.objects.create(
             username='TestAuthor2',
+            email='author2@gmail.com',
             description='Test Description',
             country='Russia'
         )
@@ -110,16 +115,19 @@ class FollowerSerializerTestCase(TestCase):
     def setUp(self):
         self.author = User.objects.create(
             username='TestAuthor',
+            email='author@gmail.com',
             description='Test Description',
             country='Russia'
         )
         self.user1 = User.objects.create(
             username='TestUser1',
+            email='user1@gmail.com',
             description='Test Description1',
             country='USA'
         )
         self.user2 = User.objects.create(
             username='TestUser2',
+            email='user2@gmail.com',
             description='Test Description2',
             country='Russia'
         )

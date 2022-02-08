@@ -49,7 +49,7 @@ class MusicAuthorSerializerTestCase(TestCase):
 class AlbumSerializerTestCase(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create(username='user')
+        self.user = User.objects.create(username='user', email='user@gmail.com')
         self.genre1 = Genre.objects.create(title='jazz')
         self.genre2 = Genre.objects.create(title='electro')
 
@@ -102,7 +102,7 @@ class AlbumSerializerTestCase(TestCase):
 class TrackSerializerTestCase(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create(username='user')
+        self.user = User.objects.create(username='user', email='user@gmail.com')
         self.genre1 = Genre.objects.create(title='jazz')
         self.genre2 = Genre.objects.create(title='electro')
         self.album = Album.objects.create(title='Album', author=self.user)

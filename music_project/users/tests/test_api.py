@@ -18,18 +18,21 @@ class BaseUserApiTestCase(TestCase):
     def setUp(self):
         self.user1 = User.objects.create(
             username='test_user1',
+            email='user1@gmail.com',
             description='Test description1',
             country='Russia',
             avatar=SimpleUploadedFile('avatar1.jpg', b'aaa')
         )
         self.user2 = User.objects.create(
             username='test_user2',
+            email='user2@gmail.com',
             description='Test description2',
             country='Usa',
             avatar=SimpleUploadedFile('avatar2.jpg', b'ccc')
         )
         self.user3 = User.objects.create(
             username='test_user3',
+            email='user3@gmail.com',
             description='Test description3',
             country='Russia'
         )
