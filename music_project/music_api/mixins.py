@@ -14,12 +14,11 @@ class SerializerSetMixin:
     }
 
     def get_serializer_class(self):
-        assert (isinstance(self.serializer_set['read'], BaseSerializer.__class__) and
-                isinstance(self.serializer_set['write'], BaseSerializer.__class__)), (
+        assert self.serializer_set['read'] and self.serializer_set['write'], (
             'Необходимо указать сериализаторы для просмотра объекта (read)'
             ' и его изменения/создания (write) атрибуту serializer_set'
         )
-        if self.request.method == 'GET':
+        if self.request.method in ['GET', 'HEAD', 'OPTIONS']:
             return self.serializer_set['read']
         return self.serializer_set['write']
 
