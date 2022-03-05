@@ -15,6 +15,11 @@ $ cd drf_music_api
 $ docker-compose -f docker-compose.yml up -d --build
 ```
 
+Установите необходимые зависимости для python
+```sh
+$ docker-compose exec app pip install -r requirements.txt 
+```
+
 Примените миграции к базе данных и сгенерируйте тестовые данные
 ```sh
 $ docker-compose exec app python manage.py migrate
