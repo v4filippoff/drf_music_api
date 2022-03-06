@@ -51,7 +51,6 @@ class UserTracksListView(MusicEntityFilterBackendsMixin, ListAPIView):
 class AlbumViewSet(SerializerSetMixin, MusicEntityFilterBackendsMixin, ModelViewSet):
     queryset = Album.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
-    parser_classes = [JSONParser, MultiPartParser]
     serializer_set = {
         'read': ViewAlbumSerializer,
         'write': CreateAlbumSerializer
